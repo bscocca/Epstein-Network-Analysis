@@ -1,68 +1,83 @@
-import streamlit as st
 import pandas as pd
+from pyvis.network import Network
 import os
 
-# 1. Setup Stile "Intelligence Report"
-st.set_page_config(page_title="Network Intelligence Explorer", layout="wide")
-st.markdown("""
-    <style>
-    .main { background-color: #f8f9fa; }
-    .stMetric { border-left: 5px solid #ff4b4b; background-color: white; padding: 10px; }
-    </style>
-    """, unsafe_allow_html=True)
+# 1. Caricamento dati
+df_nodes = pd.read_csv('data/nodes_base_metrics.csv')
+df_edges = pd.read_csv('data/edges_sentiment.csv')
 
-# 2. Caricamento Dati Semplificato
-@st.cache_data
-def load_data():
-    nodes = pd.read_csv('data/nodes_base_metrics.csv')
-    edges = pd.read_csv('data/edges_sentiment.csv')
-    # Pulizia nomi
-    nodes['Node'] = nodes['Node'].str.strip()
-    return nodes, edges
+# 2. Design dell'interfaccia (Look Professionale Dark)
+net = Network(
+    height="100vh", 
+    width="100%", 
+    bgcolor="#111111", # Sfondo nero profondo
+    font_color="#eeeeee", 
+    select_menu=True
+)
 
-df_nodes, df_edges = load_data()
+# 3. FILTRAGGIO ELITE (La chiave per la professionalità)
+# Mostriamo solo i 60 attori più centrali per evitare il caos
+top_nodes = df_nodes.nlargest(60, 'Betweenness_Centrality')
+top_names = top_nodes['Node'].tolist()
 
-# 3. Sidebar per Filtri Globali
-st.sidebar.title("🔍 Filtri Globali")
-min_weight = st.sidebar.slider("Peso minimo relazione", 1, 20, 3)
+# Filtriamo gli archi: solo quelli tra i top 60 e con peso > 1
+f_edges = df_edges[
+    (df_edges['source'].isin(top_names)) & 
+    (df_edges['target'].isin(top_names)) &
+    (df_edges['weight'] > 1)
+]
 
-# 4. Ricerca Entità (Come il sito originale)
-st.title("🛡️ Epstein Network Relationship Explorer")
-search_query = st.selectbox("Seleziona una persona o organizzazione per vedere i suoi legami:", 
-                            options=[""] + sorted(df_nodes['Node'].unique().tolist()))
+# 4. Aggiunta Nodi con Design Custom
+for _, row in top_nodes.iterrows():
+    # Dimensione basata sulla centralità
+    size = (row['Betweenness_Centrality'] * 1500) + 15
+    net.add_node(
+        row['Node'], 
+        label=row['Node'], 
+        size=size, 
+        color="#00d4ff", # Ciano tecnologico
+        borderWidth=2,
+        font={'size': 18, 'face': 'Arial', 'color': 'white'}
+    )
 
-if search_query:
-    # Filtriamo i dati per l'entità scelta
-    relazioni = df_edges[
-        ((df_edges['source'] == search_query) | (df_edges['target'] == search_query)) & 
-        (df_edges['weight'] >= min_weight)
-    ].sort_values(by='weight', ascending=False)
-
-    col1, col2 = st.columns([1, 2])
-
-    with col1:
-        st.subheader(f"Profilo: {search_query}")
-        metrics = df_nodes[df_nodes['Node'] == search_query].iloc[0]
-        st.metric("Importanza nella Rete (Betweenness)", f"{metrics['Betweenness_Centrality']:.4f}")
-        st.write(f"Questa entità ha **{len(relazioni)}** connessioni rilevanti nel dataset.")
-
-    with col2:
-        st.subheader("Relazioni Dirette e Sentiment")
-        # Visualizzazione Tabella Professionale
-        def color_sentiment(val):
-            color = 'red' if val < -0.1 else 'green' if val > 0.1 else 'black'
-            return f'color: {color}'
-        
-        st.dataframe(relazioni.style.applymap(color_sentiment, subset=['avg_sentiment']), 
-                     use_container_width=True, hide_index=True)
-
-else:
-    # Vista Generale se non c'è ricerca
-    st.info("Seleziona un nome dal menu a sinistra per iniziare l'esplorazione.")
+# 5. Aggiunta Archi (Sentiment-Driven)
+for _, row in f_edges.iterrows():
+    # Rosso per sentiment negativo, Verde per positivo, Bianco opaco per neutro
+    edge_color = "rgba(255, 77, 77, 0.6)" if row['avg_sentiment'] < -0.1 else \
+                 "rgba(0, 255, 127, 0.6)" if row['avg_sentiment'] > 0.1 else \
+                 "rgba(200, 200, 200, 0.2)"
     
-    st.subheader("Top 10 Broker della Rete (Chi controlla i flussi)")
-    st.table(df_nodes.sort_values('Betweenness_Centrality', ascending=False).head(10))
+    net.add_edge(
+        row['source'], 
+        row['target'], 
+        value=row['weight'], 
+        color=edge_color,
+        smooth={'type': 'curvedCW', 'roundness': 0.2} # Archi curvi eleganti
+    )
 
-# 5. Footer Scientifico
-st.markdown("---")
-st.caption("Analisi basata su 64,954 relazioni estratte tramite LLM e classificate con RoBERTa Sentiment Analysis.")
+# 6. FISICA AVANZATA (Stile D3.js professionale)
+net.set_options("""
+var options = {
+  "nodes": {
+    "shadow": {"enabled": true, "color": "rgba(0,212,255,0.2)"}
+  },
+  "physics": {
+    "forceAtlas2Based": {
+      "gravitationalConstant": -150,
+      "centralGravity": 0.005,
+      "springLength": 200,
+      "springConstant": 0.05,
+      "avoidOverlap": 1
+    },
+    "solver": "forceAtlas2Based",
+    "stabilization": { "iterations": 200 }
+  },
+  "interaction": {
+    "hover": true,
+    "tooltipDelay": 100
+  }
+}
+""")
+
+# 7. Generazione
+net.save_graph("intelligence_map.html")
