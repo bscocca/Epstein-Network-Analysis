@@ -2,9 +2,7 @@ RQ1: In che modo la polarità delle interazioni tra Epstein e le figure politich
 è variata in corrispondenza dei principali eventi giudiziari (2005-2008 vs 2019)?
 RQ2: Qual è il ruolo strutturale delle entità 'Unknown' nella rete e chi agisce come ponte (Broker)
 tra i cluster dei documenti legali e quelli dei contatti internazionali?
-RQ3: I cluster rilevati tramite algoritmi di Community Detection (Louvain) riflettono le categorie
-tematiche (es. 'Legal', 'Financial') assegnate dai modelli LLM nel dataset originale?
-RQ4: Come cambia la gerarchia di influenza dei nodi centrali (Trump, Dershowitz, Maxwell) se la 
+RQ3: Come cambia la gerarchia di influenza dei nodi centrali (Trump, Dershowitz, Maxwell) se la 
 loro centralità viene pesata in base al sentiment (positivo vs negativo) delle interazioni
 documentate?
 
@@ -23,16 +21,7 @@ RQ le analizza usando la Betweenness Centrality (Centralità di Intermediazione)
 tra cluster diversi (es. tra il mondo della finanza e quello legale). Analizzare questi nodi, 
 inclusi quelli anonimi, ci permette di mappare la struttura del segreto all'interno della rete.
 
-RQ3: Coerenza tra Topologia (Rete) e Semantica (LLM)
-- Questa è la domanda più "architetturale". Mette a confronto la Community Detection (algoritmo 
-di Louvain), che raggruppa le persone in base ai legami, con le Categorie LLM (Legal, Financial, 
-ecc.), che raggruppano i documenti in base al testo.
-- Vogliamo validare se la struttura sociale della rete riflette la divisione tematica dei 
-documenti. Se i cluster di persone coincidono con le categorie 'Financial' o 'Legal', la rete
-è organizzata per compartimenti professionali. Se non coincidono, significa che le relazioni 
-erano trasversali e meno formalizzate. È un test di validazione tra Network Science e NLP.
-
-RQ4: Influenza Pesata dal Sentiment (Centralità Evoluta)
+RQ3: Influenza Pesata dal Sentiment (Centralità Evoluta)
 - Tradizionalmente, un nodo è importante se ha molti collegamenti. In questa RQ, ridefiniamo 
 l'importanza pesando ogni arco con il punteggio di sentiment ottenuto da BERT.
 - ogliamo superare la network analysis classica che tratta ogni legame come uguale. Creeremo 
