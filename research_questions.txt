@@ -1,30 +1,19 @@
-RQ1: In che modo la polarità delle interazioni tra Epstein e le figure politiche (es. Trump, Barak)
-è variata in corrispondenza dei principali eventi giudiziari (2005-2008 vs 2019)?
-RQ2: Qual è il ruolo strutturale delle entità 'Unknown' nella rete e chi agisce come ponte (Broker)
-tra i cluster dei documenti legali e quelli dei contatti internazionali?
-RQ3: Come cambia la gerarchia di influenza dei nodi centrali (Trump, Dershowitz, Maxwell) se la 
-loro centralità viene pesata in base al sentiment (positivo vs negativo) delle interazioni
-documentate?
+RQ1: Context Drift (Evoluzione Semantica Temporale)
+Descrizione: Analisi della mutazione degli archi del grafo nel tempo. 
+Obiettivo: Identificare se la rete evolve da una prevalenza di nodi "Sociali/Logistici"
+(fase operativa) a nodi "Legali/Difensivi" (fase giudiziaria).
+Metodo: Time-series analysis delle categorie semantiche estratte tramite Zero-Shot Classification 
+applicata ai documenti datati.
 
-RQ1: Evoluzione Dinamica e "Sentiment Drift"
-- Questa domanda indaga come la natura delle relazioni sia cambiata nel tempo. Non ci limitiamo a 
-vedere "chi parlava con chi", ma usiamo modelli BERT/RoBERTa per assegnare un punteggio di
-sentiment a ogni interazione datata.
-- Vogliamo verificare se la rete di Epstein ha subito una 'deriva negativa' in corrispondenza dei 
-momenti di crisi giudiziaria (es. l'arresto del 2008). Questo dimostra che il sentiment non è 
-solo un attributo estetico, ma un indicatore dello stato di tensione o stabilità del network.
+RQ2: The Brokers (Analisi dei Buchi Strutturali)
+Descrizione: Studio del ruolo delle entità classificate come 'Unknown' o 'Anonymous'.
+Obiettivo: Verificare se queste entità agiscono come "Gatekeepers" o "Bridges" tra cluster di 
+potere altrimenti isolati.
+Metodo: Calcolo della Betweenness Centrality e analisi dei vicini di primo grado per i nodi 
+non identificati.
 
-RQ2: Brokerage e il Ruolo delle Entità "Unknown"
-- Il dataset presenta migliaia di occorrenze di "Unknown Person A/B". Invece di scartarle, questa 
-RQ le analizza usando la Betweenness Centrality (Centralità di Intermediazione).
-- In un network investigativo, i 'Broker' sono coloro che controllano il flusso di informazioni 
-tra cluster diversi (es. tra il mondo della finanza e quello legale). Analizzare questi nodi, 
-inclusi quelli anonimi, ci permette di mappare la struttura del segreto all'interno della rete.
-
-RQ3: Influenza Pesata dal Sentiment (Centralità Evoluta)
-- Tradizionalmente, un nodo è importante se ha molti collegamenti. In questa RQ, ridefiniamo 
-l'importanza pesando ogni arco con il punteggio di sentiment ottenuto da BERT.
-- ogliamo superare la network analysis classica che tratta ogni legame come uguale. Creeremo 
-una gerarchia di influenza 'weighted' (pesata): un attore molto centrale in contesti negativi 
-ha un ruolo di 'disturbatore' o 'bersaglio', mentre uno centrale in contesti positivi ha un 
-ruolo di 'alleato'. È l'integrazione definitiva tra Deep Learning e Graph Theory.
+Descrizione: Comparazione della gerarchia di influenza in base al dominio.
+Obiettivo: Capire chi domina la logistica (es. piloti, gestori di proprietà) rispetto a 
+chi domina il network legale.
+Metodo: Scomposizione del grafo in sottografi categorizzati (Legal vs Logistic) e ricalcolo 
+degli algoritmi di PageRank e Eigenvector Centrality.

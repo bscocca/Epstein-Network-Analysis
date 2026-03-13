@@ -208,3 +208,9 @@ __marimo__/
 
 # Database
 data/document_analysis.db
+
+# Data
+data/edges_classified.csv
+data/edges_base.csvdata/edges_base.csv
+data/edges_base.csv
+data/edges_base.csv

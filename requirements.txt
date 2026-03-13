@@ -79,6 +79,7 @@ pydeck==0.9.1
 Pygments==2.19.2
 pyparsing==3.3.2
 python-dateutil==2.9.0.post0
+python-louvain==0.16
 pytz==2026.1.post1
 pyvis==0.3.2
 pyvis-network==0.0.6
