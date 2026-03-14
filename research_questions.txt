@@ -17,3 +17,166 @@ Obiettivo: Capire chi domina la logistica (es. piloti, gestori di proprietà) ri
 chi domina il network legale.
 Metodo: Scomposizione del grafo in sottografi categorizzati (Legal vs Logistic) e ricalcolo 
 degli algoritmi di PageRank e Eigenvector Centrality.
+
+════════════════════════════════════════════════════════════════
+  FORENSIC NETWORK ANALYSIS: THE EPSTEIN CORPUS
+  Research Questions — Documento Metodologico
+════════════════════════════════════════════════════════════════
+
+PREMESSA METODOLOGICA
+──────────────────────
+Il dataset è composto da documenti eterogenei: email personali, log di volo,
+atti giudiziari, dichiarazioni e corrispondenza legale. Questa eterogeneità
+rende la Sentiment Analysis uno strumento inadatto: la dominanza di testo
+procedurale e fattuale produrrebbe un'inflazione artificiale della classe
+"Neutro", rendendo i risultati statisticamente non informativi.
+
+La scelta metodologica alternativa è la Zero-Shot Text Classification
+applicata ai riassunti (one_sentence_summary, paragraph_summary) dei
+documenti. Questo approccio permette di classificare semanticamente ogni
+arco del grafo in categorie funzionali — Logistical, Social, Legal —
+senza richiedere un training set annotato, sfruttando la capacità di
+generalizzazione di modelli transformer pre-addestrati (es. BART-MNLI,
+DeBERTa-v3-large-zeroshot).
+
+Queste etichette diventano gli attributi degli archi del knowledge graph,
+abilitando analisi filtrate per dominio e temporali.
+
+
+════════════════════════════════════════════════════════════════
+RQ1 — CONTEXT DRIFT
+"In che modo la natura delle interazioni (Logistica, Sociale, Legale)
+evolve nel tempo, in corrispondenza dei principali eventi giudiziari?"
+════════════════════════════════════════════════════════════════
+
+MOTIVAZIONE TEORICA
+───────────────────
+Nei network forensici, la distribuzione tipologica delle relazioni non è
+stabile: eventi esterni (arresti, accordi, procedimenti) agiscono come
+"shock esogeni" che alterano la struttura comunicativa e relazionale.
+L'ipotesi è che, in prossimità di eventi giudiziari chiave, si osservi
+uno shift dalla dominanza di archi "Social/Logistical" verso archi "Legal",
+e che le entità centrali cambino ruolo.
+
+EVENTI CHIAVE DA MAPPARE
+────────────────────────
+  • 2005 → Prima indagine della Palm Beach Police
+  • 2006 → Indagine federale FBI
+  • 2008 → Patteggiamento (Non-prosecution Agreement, Acosta deal)
+  • 2019 → Secondo arresto federale (SDNY)
+  • 2019 → Morte in detenzione
+
+METRICHE DI ANALISI
+────────────────────
+  - Distribuzione % degli archi per categoria (Logistical / Social / Legal)
+    aggregata per anno o semestre
+  - Volume totale di relazioni per finestra temporale
+  - Variazione della densità del grafo in prossimità degli eventi
+  - Identificazione dei nodi che "sopravvivono" attraverso più periodi
+
+OUTPUT ATTESO
+─────────────
+  Un'analisi temporale (time-series) della composizione semantica del
+  network, con annotazioni degli eventi giudiziari. Risponde alla domanda:
+  "Il network si 'legifica' dopo gli shock giudiziari?"
+
+
+════════════════════════════════════════════════════════════════
+RQ2 — THE BROKERS
+"Qual è il ruolo strutturale delle entità 'Unknown' nel connettere
+cluster separati?"
+════════════════════════════════════════════════════════════════
+
+MOTIVAZIONE TEORICA
+───────────────────
+Nei network forensici, le entità non identificate ("Unknown", nomi
+oscurati, iniziali) non sono rumore: possono essere "broker strutturali",
+ovvero nodi con alta Betweenness Centrality che collegano componenti del
+grafo altrimenti disconnesse. In letteratura (Burt, 2004 — Structural
+Holes), questi nodi occupano una posizione di potere informativo superiore
+rispetto ai nodi con alta degree centrality ma bassa betweenness.
+
+OPERATIVIZZAZIONE
+─────────────────
+  - Definizione di "Unknown Entity": qualsiasi nodo che nel campo
+    actor o target contenga token come "Unknown", "Jane Doe",
+    "Individual #N", "Victim", iniziali sole (es. "J.D.")
+  - Calcolo della Betweenness Centrality sull'intero grafo
+  - Calcolo della Betweenness Centrality sul grafo filtrato
+    (solo archi con etichetta "Social")
+  - Confronto del ranking: gli Unknown scalano in classifica
+    quando si considera solo il dominio sociale?
+
+DOMANDE OPERATIVE
+─────────────────
+  1. Quante entità Unknown esistono nel dataset?
+  2. Qual è la loro Betweenness Centrality media vs. entità named?
+  3. Quali coppie di cluster named vengono connesse esclusivamente
+     tramite entità Unknown?
+  4. Esiste un "Unknown" specifico con betweenness anomala?
+
+OUTPUT ATTESO
+─────────────
+  Una sottoreete ego-centrica attorno alle top-N entità Unknown,
+  con visualizzazione dei cluster che bridgiano. Risponde alla domanda:
+  "Chi sono gli invisibili che tengono insieme il network?"
+
+
+════════════════════════════════════════════════════════════════
+RQ3 — CONTEXTUAL INFLUENCE
+"Come cambia la gerarchia di influenza (Centrality) filtrando
+la rete per specifici domini (Legal vs. Logistical)?"
+════════════════════════════════════════════════════════════════
+
+MOTIVAZIONE TEORICA
+───────────────────
+La centralità di un nodo non è una proprietà assoluta: dipende dal
+contesto relazionale considerato. Un nodo può essere centrale nel
+network logistico (es. pilota, assistente) ma marginale in quello
+legale, e viceversa (es. avvocato). Analizzare i cambiamenti di
+gerarchia tra sottografi contestuali permette di distinguere i tipi
+di "potere" esercitato da ciascun attore.
+
+METRICHE DA CALCOLARE
+──────────────────────
+  Per ciascun dominio (Legal, Logistical, Social) e per il grafo
+  completo, calcolare:
+    • Degree Centrality — quante connessioni dirette
+    • Betweenness Centrality — ruolo di intermediario
+    • PageRank — influenza propagata nel network
+    • Eigenvector Centrality — connessione a nodi influenti
+
+  Poi costruire una "Centrality Rank Shift Matrix":
+  per ogni nodo, quanto cambia il suo ranking passando
+  da un dominio all'altro?
+
+DOMANDE OPERATIVE
+─────────────────
+  1. Chi sono i top-10 nodi per Degree nel grafo completo?
+  2. Come cambia questa classifica nel sottografo Legal-only?
+  3. Esistono nodi che appaiono SOLO in un dominio specifico
+     (specializzazione funzionale)?
+  4. I nodi con alto PageRank nel dominio Social coincidono
+     con quelli ad alta Betweenness nel dominio Legal?
+
+OUTPUT ATTESO
+─────────────
+  Tabelle comparative di ranking (heatmap o parallel coordinates)
+  e sottografi filtrati per dominio. Risponde alla domanda:
+  "Il potere è la stessa cosa in contesti diversi?"
+
+
+════════════════════════════════════════════════════════════════
+CONNESSIONI TRA RQ
+════════════════════════════════════════════════════════════════
+
+  RQ1 fornisce la dimensione TEMPORALE del network
+  RQ2 fornisce la dimensione STRUTTURALE (chi fa da ponte)
+  RQ3 fornisce la dimensione CONTESTUALE (in quale dominio)
+
+  Le tre RQ convergono in una narrativa coerente:
+  il network Epstein non è statico, uniforme né trasparente —
+  muta nel tempo (RQ1), è tenuto insieme da attori oscuri (RQ2),
+  e il potere si distribuisce diversamente a seconda del contesto (RQ3).
+
+════════════════════════════════════════════════════════════════
