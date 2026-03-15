@@ -8,12 +8,12 @@ import { useGraphData } from './hooks/useGraphData.js'
 const DEFAULT_FILTERS = {
   categories:  ['Legal', 'Social', 'Logistical'],
   showUnknown: true,
-  minDegree:   25,
+  minDegree:   5,
   highlightNode: null,
 }
 
 export default function App() {
-  const [filters, setFilters]         = useState(DEFAULT_FILTERS)
+  const [filters, setFilters]           = useState(DEFAULT_FILTERS)
   const [selectedNode, setSelectedNode] = useState(null)
 
   const { graphData, metadata, loading, error } = useGraphData(filters)
