@@ -8,7 +8,7 @@ import { useGraphData } from './hooks/useGraphData.js'
 const DEFAULT_FILTERS = {
   categories:  ['Legal', 'Social', 'Logistical'],
   showUnknown: true,
-  minDegree:   3,
+  minDegree:   25,
   highlightNode: null,
 }
 

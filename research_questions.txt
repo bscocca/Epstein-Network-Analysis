@@ -1,182 +1,274 @@
-RQ1: Context Drift (Evoluzione Semantica Temporale)
-Descrizione: Analisi della mutazione degli archi del grafo nel tempo. 
-Obiettivo: Identificare se la rete evolve da una prevalenza di nodi "Sociali/Logistici"
-(fase operativa) a nodi "Legali/Difensivi" (fase giudiziaria).
-Metodo: Time-series analysis delle categorie semantiche estratte tramite Zero-Shot Classification 
-applicata ai documenti datati.
-
-RQ2: The Brokers (Analisi dei Buchi Strutturali)
-Descrizione: Studio del ruolo delle entità classificate come 'Unknown' o 'Anonymous'.
-Obiettivo: Verificare se queste entità agiscono come "Gatekeepers" o "Bridges" tra cluster di 
-potere altrimenti isolati.
-Metodo: Calcolo della Betweenness Centrality e analisi dei vicini di primo grado per i nodi 
-non identificati.
-
-Descrizione: Comparazione della gerarchia di influenza in base al dominio.
-Obiettivo: Capire chi domina la logistica (es. piloti, gestori di proprietà) rispetto a 
-chi domina il network legale.
-Metodo: Scomposizione del grafo in sottografi categorizzati (Legal vs Logistic) e ricalcolo 
-degli algoritmi di PageRank e Eigenvector Centrality.
-
-════════════════════════════════════════════════════════════════
   FORENSIC NETWORK ANALYSIS: THE EPSTEIN CORPUS
-  Research Questions — Documento Metodologico
-════════════════════════════════════════════════════════════════
+  Research Questions — Metodologia e Risultati
+  Corso: Web and Data Science — Prof. Pierri
+
+
 
 PREMESSA METODOLOGICA
-──────────────────────
-Il dataset è composto da documenti eterogenei: email personali, log di volo,
-atti giudiziari, dichiarazioni e corrispondenza legale. Questa eterogeneità
-rende la Sentiment Analysis uno strumento inadatto: la dominanza di testo
-procedurale e fattuale produrrebbe un'inflazione artificiale della classe
-"Neutro", rendendo i risultati statisticamente non informativi.
+Il dataset è composto da 25,232 documenti eterogenei: email personali, log di
+volo, atti giudiziari, dichiarazioni e corrispondenza legale. Da questi documenti
+una pipeline AI ha estratto 107,030 triple RDF nel formato (soggetto, azione,
+oggetto), che costituiscono gli archi del knowledge graph oggetto di analisi.
 
-La scelta metodologica alternativa è la Zero-Shot Text Classification
-applicata ai riassunti (one_sentence_summary, paragraph_summary) dei
-documenti. Questo approccio permette di classificare semanticamente ogni
-arco del grafo in categorie funzionali — Logistical, Social, Legal —
-senza richiedere un training set annotato, sfruttando la capacità di
-generalizzazione di modelli transformer pre-addestrati (es. BART-MNLI,
-DeBERTa-v3-large-zeroshot).
+SCELTA METODOLOGICA — ZERO-SHOT NLP
+La Sentiment Analysis è stata scartata come approccio principale per una ragione
+strutturale: il corpus è dominato da testo procedurale e fattuale (log di volo,
+verbali, atti legali). Su questo tipo di contenuto, la Sentiment Analysis produce
+un'inflazione artificiale della classe "Neutro" — fino al 90%+ degli archi —
+rendendo i risultati statisticamente non informativi. La Zero-Shot Text
+Classification con BART-large-mnli (Lewis et al., 2019) permette di assegnare
+etichette semanticamente significative a ciascun arco senza richiedere un
+training set annotato, sfruttando le capacità di generalizzazione del modello
+NLI pre-addestrato.
 
-Queste etichette diventano gli attributi degli archi del knowledge graph,
-abilitando analisi filtrate per dominio e temporali.
+TASSONOMIA ADOTTATA
+Tre classi semantiche, scelte per parsimonia e allineamento diretto con le RQ:
+
+  • Legal       — interazioni istituzionali/giudiziarie
+  • Social      — interazioni personali/politiche
+  • Logistical  — interazioni di coordinamento/movimento
+
+Limitazione riconosciuta: il confine Legal/Social è permeabile in presenza di
+comunicazioni miste. Future iterazioni potrebbero adottare una tassonomia a 5
+classi includendo "Financial" e "Reputational".
+
+RISULTATI NLP
+  Legal:       49,485 archi (46.2%) — confidence media 0.790
+  Social:      48,534 archi (45.3%) — confidence media 0.724
+  Logistical:   9,002 archi  (8.4%) — confidence media 0.728
+
+Soglia di confidence adottata: ≥ 0.70
+Archi validi dopo filtering: 66,467 (62.1% del totale)
+La soglia è stata determinata empiricamente tramite validazione qualitativa
+manuale (human-in-the-loop) su un campione stratificato di 15 triple per classe.
+Un'analisi sulle triple payment→Unknown (n=173) ha confermato che il 94.2% era
+già correttamente classificato come Legal al di sopra di questa soglia.
 
 
-════════════════════════════════════════════════════════════════
+
 RQ1 — CONTEXT DRIFT
-"In che modo la natura delle interazioni (Logistica, Sociale, Legale)
-evolve nel tempo, in corrispondenza dei principali eventi giudiziari?"
-════════════════════════════════════════════════════════════════
+"In che modo la natura delle interazioni (Logistica, Sociale, Legale) evolve
+nel tempo, in corrispondenza dei principali eventi giudiziari?"
 
-MOTIVAZIONE TEORICA
-───────────────────
-Nei network forensici, la distribuzione tipologica delle relazioni non è
-stabile: eventi esterni (arresti, accordi, procedimenti) agiscono come
-"shock esogeni" che alterano la struttura comunicativa e relazionale.
-L'ipotesi è che, in prossimità di eventi giudiziari chiave, si osservi
-uno shift dalla dominanza di archi "Social/Logistical" verso archi "Legal",
-e che le entità centrali cambino ruolo.
 
-EVENTI CHIAVE DA MAPPARE
-────────────────────────
+IPOTESI
+In prossimità di eventi giudiziari chiave (arresti, indagini, procedimenti),
+si osserva uno shift dalla dominanza di archi Social/Logistical verso archi
+Legal. L'ipotesi è che il network si "legifichi" sotto pressione istituzionale
+e torni a pattern sociali quando la pressione cessa.
+
+EVENTI GIUDIZIARI ANNOTATI
   • 2005 → Prima indagine della Palm Beach Police
   • 2006 → Indagine federale FBI
   • 2008 → Patteggiamento (Non-prosecution Agreement, Acosta deal)
-  • 2019 → Secondo arresto federale (SDNY)
-  • 2019 → Morte in detenzione
+  • 2019 → Secondo arresto federale (SDNY) e morte in detenzione
 
-METRICHE DI ANALISI
-────────────────────
-  - Distribuzione % degli archi per categoria (Logistical / Social / Legal)
-    aggregata per anno o semestre
-  - Volume totale di relazioni per finestra temporale
-  - Variazione della densità del grafo in prossimità degli eventi
-  - Identificazione dei nodi che "sopravvivono" attraverso più periodi
+RISULTATI
 
-OUTPUT ATTESO
-─────────────
-  Un'analisi temporale (time-series) della composizione semantica del
-  network, con annotazioni degli eventi giudiziari. Risponde alla domanda:
-  "Il network si 'legifica' dopo gli shock giudiziari?"
+  ┌─────────────────────────────┬───────┬────────┬─────────────┬──────────┐
+  │ Periodo                     │ Legal │ Social │ Logistical  │ N archi  │
+  ├─────────────────────────────┼───────┼────────┼─────────────┼──────────┤
+  │ Pre-2005 (pre-indagine)     │ 60.9% │  36.7% │       2.4%  │   2,538  │
+  │ 2005-2008 (indagini)        │ 94.1% │   5.3% │       0.6%  │   5,947  │
+  │ 2009-2018 (post-patteggio)  │ 35.8% │  50.8% │      13.4%  │  25,831  │
+  │ 2019+ (secondo arresto)     │ 28.4% │  53.7% │      17.9%  │   2,961  │
+  └─────────────────────────────┴───────┴────────┴─────────────┴──────────┘
+
+INTERPRETAZIONE
+
+Finding 1 — Conferma del Context Drift.
+Il network si legifica in risposta agli shock giudiziari esattamente come
+ipotizzato. Il picco di Legal al 94.1% nel 2005-2008 è la risposta strutturale
+più marcata: in quel biennio quasi ogni interazione documentata è di natura
+giudiziaria. Questo è coerente con la teoria del crisis communication: sotto
+pressione istituzionale, gli attori concentrano le loro interazioni documentate
+sul dominio legale.
+
+Finding 2 — Il rimbalzo Social post-patteggiamento.
+Dopo il Non-prosecution Agreement del 2008, Legal crolla da 94.1% a 35.8%
+e Social sale a 50.8%. Il network "torna alla normalità" — le interazioni
+documentate riprendono ad essere prevalentemente personali e politiche.
+Questo suggerisce che il patteggiamento ha effettivamente ridotto la pressione
+istituzionale percepita dagli attori del network.
+
+Finding 3 — La crescita di Logistical.
+Quasi assente prima del 2009 (0.6-2.4%), Logistical cresce fino al 13.4%
+nel 2009-2018 e al 17.9% nel 2019+. Due interpretazioni plausibili:
+(a) aumento reale di attività logistiche documentate nel periodo post-patto,
+(b) miglioramento della copertura documentale per questa categoria.
+Non è possibile distinguere le due cause senza dati aggiuntivi sulla
+distribuzione dei documenti sorgente per periodo.
+
+RISPOSTA ALLA RQ1
+"Il network Epstein non è statico: si legifica in risposta agli shock
+giudiziari (Legal 94.1% nel 2005-2008) e ritorna a pattern sociali
+quando la pressione cessa (Social 50.8% nel 2009-2018). Il Context Drift
+è misurabile, statisticamente marcato e coerente con gli eventi documentati."
 
 
-════════════════════════════════════════════════════════════════
+
 RQ2 — THE BROKERS
 "Qual è il ruolo strutturale delle entità 'Unknown' nel connettere
 cluster separati?"
-════════════════════════════════════════════════════════════════
 
-MOTIVAZIONE TEORICA
-───────────────────
-Nei network forensici, le entità non identificate ("Unknown", nomi
-oscurati, iniziali) non sono rumore: possono essere "broker strutturali",
-ovvero nodi con alta Betweenness Centrality che collegano componenti del
-grafo altrimenti disconnesse. In letteratura (Burt, 2004 — Structural
-Holes), questi nodi occupano una posizione di potere informativo superiore
-rispetto ai nodi con alta degree centrality ma bassa betweenness.
+QUADRO TEORICO
+Burt (2004) — Structural Holes: gli attori che collegano cluster altrimenti
+disconnessi occupano "buchi strutturali" con vantaggio informativo e strategico
+sproporzionato. La Betweenness Centrality è l'operativizzazione standard di
+questo concetto: misura la proporzione di shortest paths tra tutte le coppie
+di nodi che transitano per un dato nodo.
 
 OPERATIVIZZAZIONE
-─────────────────
-  - Definizione di "Unknown Entity": qualsiasi nodo che nel campo
-    actor o target contenga token come "Unknown", "Jane Doe",
-    "Individual #N", "Victim", iniziali sole (es. "J.D.")
-  - Calcolo della Betweenness Centrality sull'intero grafo
-  - Calcolo della Betweenness Centrality sul grafo filtrato
-    (solo archi con etichetta "Social")
-  - Confronto del ranking: gli Unknown scalano in classifica
-    quando si considera solo il dominio sociale?
+Definizione adottata di "Unknown Entity": qualsiasi nodo che nella denominazione
+contenga token come "unknown", "jane doe", "individual #N", "victim", "minor",
+"unidentified" — catturati tramite regex per evitare falsi negativi da
+varianti lessicali.
 
-DOMANDE OPERATIVE
-─────────────────
-  1. Quante entità Unknown esistono nel dataset?
-  2. Qual è la loro Betweenness Centrality media vs. entità named?
-  3. Quali coppie di cluster named vengono connesse esclusivamente
-     tramite entità Unknown?
-  4. Esiste un "Unknown" specifico con betweenness anomala?
+Entità Unknown identificate nel grafo: 2,497 nodi (7.5% del totale)
 
-OUTPUT ATTESO
-─────────────
-  Una sottoreete ego-centrica attorno alle top-N entità Unknown,
-  con visualizzazione dei cluster che bridgiano. Risponde alla domanda:
-  "Chi sono gli invisibili che tengono insieme il network?"
+BETWEENNESS: CONFRONTO NAMED vs UNKNOWN
+
+  Entità Named (30,905 nodi):
+    Media:    0.00001
+    Max:      0.03364  (Jeffrey Epstein)
+
+  Entità Unknown (2,497 nodi):
+    Media:    0.00002
+    Max:      0.01990  (unknown person A)
+
+  Rapporto betweenness media Unknown/Named: 2.18x
+  → Le entità Unknown hanno betweenness media significativamente più alta.
+
+CONCENTRAZIONE DI BETWEENNESS
+  Unknown = 7.5% dei nodi → controllano 15.0% della betweenness totale
+  Rapporto di concentrazione: 2.00x rispetto alla distribuzione attesa
+  → Le entità Unknown non sono distribuite casualmente nel network:
+    occupano sistematicamente posizioni di intermediazione privilegiata.
+
+TOP BROKER UNKNOWN
+
+  ┌──────────────────────────┬─────────────┬──────────┬────────┬───────────┐
+  │ Entità                   │ Betweenness │ PageRank │ Degree │ Community │
+  ├──────────────────────────┼─────────────┼──────────┼────────┼───────────┤
+  │ unknown person A         │   0.01990   │ 0.00513  │  3,700 │    30     │
+  │ unknown person B         │   0.00415   │ 0.00063  │    481 │     1     │
+  │ unknown person           │   0.00163   │ 0.00052  │    176 │     0     │
+  │ Jane Doe #1              │   0.00103   │ 0.00008  │     26 │    29     │
+  │ victim                   │   0.00102   │ 0.00052  │    105 │    32     │
+  │ unknown minor            │   0.00098   │ 0.00013  │     35 │   101     │
+  │ unknown witness          │   0.00078   │ 0.00011  │    127 │    25     │
+  │ unknown person C         │   0.00063   │ 0.00018  │    159 │     1     │
+  └──────────────────────────┴─────────────┴──────────┴────────┴───────────┘
+
+EGO-NETWORK DI UNKNOWN PERSON A
+I 30 vicini più connessi di unknown person A includono: Donald Trump,
+Bill Clinton, Barack Obama, Hillary Clinton, Ghislaine Maxwell,
+Alan Dershowitz, Ehud Barak, Lawrence Summers, Prince Andrew,
+Reid Weingarten. unknown person B è direttamente connesso ma appartiene
+a una community diversa (community 1 vs 30) — le due entità anonime
+gestiscono sfere relazionali indipendenti, non sono la stessa persona.
+
+RISPOSTA ALLA RQ2
+"Le entità Unknown rappresentano il 7.5% dei nodi ma controllano il 15.0%
+della betweenness totale — rapporto di concentrazione 2.00x. La loro
+betweenness media è 2.18x superiore alle entità named. Sono broker
+strutturali nel senso di Burt (2004): non sono rumore nel dataset ma
+attori che occupano posizioni di intermediazione privilegiata tra cluster
+altrimenti disconnessi. unknown person A è il secondo nodo per betweenness
+nell'intero grafo, superato solo da Epstein stesso."
 
 
-════════════════════════════════════════════════════════════════
 RQ3 — CONTEXTUAL INFLUENCE
-"Come cambia la gerarchia di influenza (Centrality) filtrando
-la rete per specifici domini (Legal vs. Logistical)?"
-════════════════════════════════════════════════════════════════
+"Come cambia la gerarchia di influenza (Centrality) filtrando la rete
+per specifici domini (Legal vs Social vs Logistical)?"
 
-MOTIVAZIONE TEORICA
-───────────────────
-La centralità di un nodo non è una proprietà assoluta: dipende dal
-contesto relazionale considerato. Un nodo può essere centrale nel
-network logistico (es. pilota, assistente) ma marginale in quello
-legale, e viceversa (es. avvocato). Analizzare i cambiamenti di
-gerarchia tra sottografi contestuali permette di distinguere i tipi
-di "potere" esercitato da ciascun attore.
+QUADRO TEORICO
+La centralità di un nodo non è una proprietà assoluta: dipende dal contesto
+relazionale considerato. Un nodo può essere centrale nel network legale (es.
+avvocato) ma marginale in quello sociale, e viceversa. Analizzare i cambiamenti
+di gerarchia tra sottografi contestuali permette di distinguere i tipi di
+"potere" esercitato da ciascun attore.
 
-METRICHE DA CALCOLARE
-──────────────────────
-  Per ciascun dominio (Legal, Logistical, Social) e per il grafo
-  completo, calcolare:
-    • Degree Centrality — quante connessioni dirette
-    • Betweenness Centrality — ruolo di intermediario
-    • PageRank — influenza propagata nel network
-    • Eigenvector Centrality — connessione a nodi influenti
+SOTTOGRAFI COSTRUITI
+  Legal-only:       18,091 nodi, 21,034 archi
+  Social-only:      15,150 nodi, 16,635 archi
+  Logistical-only:   1,826 nodi,  1,863 archi
+  (Nota: la bassa densità del sottografo Logistical — quasi 1 arco per nodo —
+   rende le metriche su quel dominio statisticamente meno stabili)
 
-  Poi costruire una "Centrality Rank Shift Matrix":
-  per ogni nodo, quanto cambia il suo ranking passando
-  da un dominio all'altro?
+RANK SHIFT MATRIX — TOP 20 PER PAGERANK (GRAFO COMPLETO)
 
-DOMANDE OPERATIVE
-─────────────────
-  1. Chi sono i top-10 nodi per Degree nel grafo completo?
-  2. Come cambia questa classifica nel sottografo Legal-only?
-  3. Esistono nodi che appaiono SOLO in un dominio specifico
-     (specializzazione funzionale)?
-  4. I nodi con alto PageRank nel dominio Social coincidono
-     con quelli ad alta Betweenness nel dominio Legal?
+  ┌────────────────────────────┬──────┬───────┬────────┬─────────────┐
+  │ Entità                     │ Full │ Legal │ Social │ Logistical  │
+  ├────────────────────────────┼──────┼───────┼────────┼─────────────┤
+  │ Jeffrey Epstein            │  1   │   1   │   1    │      1      │
+  │ unknown person A           │  2   │   2   │   4    │      2      │
+  │ Donald Trump               │  3   │  10   │   3    │      5      │
+  │ Alan M. Dershowitz         │  4   │   3   │  20    │     42      │
+  │ Edward Snowden             │  5   │   5   │  15    │      3      │
+  │ Bill Clinton               │  6   │  12   │  10    │     15      │
+  │ United States              │  7   │  11   │  13    │     66      │
+  │ Ehud Barak                 │  8   │ 440   │   4    │     29      │
+  │ Virginia Roberts Giuffre   │  9   │   5   │ 158    │     66      │
+  │ Ghislaine Maxwell          │ 10   │   7   │  29    │     98      │
+  │ FBI                        │ 11   │   6   │ 609    │  1,415      │
+  │ Steve Bannon               │ 12   │ 309   │  12    │     91      │
+  │ Barack Obama               │ 13   │ 488   │   6    │  1,080      │
+  │ Palm Beach Police Dept.    │ 14   │  10   │ 8,288  │  1,683      │
+  │ unknown person B           │ 15   │  14   │  37    │     39      │
+  │ Prince Andrew              │ 16   │  18   │  32    │  1,683      │
+  │ Bradley James Edwards      │ 17   │   9   │ 6,811  │    361      │
+  │ Kathy Ruemmler             │ 18   │ 565   │  13    │    383      │
+  │ Lawrence M. Krauss         │ 19   │  26   │  46    │      4      │
+  │ unknown person             │ 20   │  50   │  20    │     89      │
+  └────────────────────────────┴──────┴───────┴────────┴─────────────┘
 
-OUTPUT ATTESO
-─────────────
-  Tabelle comparative di ranking (heatmap o parallel coordinates)
-  e sottografi filtrati per dominio. Risponde alla domanda:
-  "Il potere è la stessa cosa in contesti diversi?"
+PATTERN IDENTIFICATI
+
+Nodi universali (stabili in tutti i domini):
+  Jeffrey Epstein: rank 1-1-1-1 → hub assoluto, dominante in ogni contesto
+  unknown person A: rank 2-2-4-2 → broker universale, quasi stabile
+
+Specialisti Legal (alta centralità Legal, bassa Social):
+  Virginia Roberts Giuffre: rank 5 Legal → rank 158 Social
+    → Appare quasi esclusivamente nei procedimenti giudiziari come vittima
+  Palm Beach Police Dept.: rank 10 Legal → rank 8,288 Social
+    → Istituzione puramente giudiziaria, invisibile fuori dal dominio legale
+  Bradley James Edwards: rank 9 Legal → rank 6,811 Social
+    → Avvocato delle vittime, presenza esclusivamente giudiziaria
+  FBI: rank 6 Legal → rank 609 Social → rank 1,415 Logistical
+
+Specialisti Social (alta centralità Social, bassa Legal):
+  Ehud Barak: rank 4 Social → rank 440 Legal
+    → Relazione personale/politica con Epstein, non giudiziaria
+  Barack Obama: rank 6 Social → rank 488 Legal
+    → Citato nel contesto politico, non legale
+  Steve Bannon: rank 12 Social → rank 309 Legal → rank 7 Social
+    → Presenza prevalentemente mediatica/politica
+
+Specialista Logistical:
+  Lawrence M. Krauss: rank 4 Logistical → rank 26 Legal → rank 46 Social
+    → Coordinamento fisico/logistico, non politico né giudiziario
+
+RISPOSTA ALLA RQ3
+"Il potere è contestuale: lo stesso attore può essere centrale in un dominio
+e marginale in un altro. Dershowitz è #3 nel dominio Legal e #20 nel Social.
+Barak è #4 nel Social e #440 nel Legal. Virginia Roberts Giuffre è #5 nel
+Legal e #158 nel Social — appare quasi esclusivamente nei procedimenti
+giudiziari. Questa specializzazione funzionale sarebbe invisibile analizzando
+solo la centralità aggregata del grafo completo."
 
 
-════════════════════════════════════════════════════════════════
-CONNESSIONI TRA RQ
-════════════════════════════════════════════════════════════════
+CONNESSIONI TRA LE TRE RQ
 
-  RQ1 fornisce la dimensione TEMPORALE del network
-  RQ2 fornisce la dimensione STRUTTURALE (chi fa da ponte)
-  RQ3 fornisce la dimensione CONTESTUALE (in quale dominio)
+  RQ1 — dimensione TEMPORALE: il network cambia nel tempo
+  RQ2 — dimensione STRUTTURALE: chi tiene insieme il network
+  RQ3 — dimensione CONTESTUALE: il potere dipende dal dominio
 
-  Le tre RQ convergono in una narrativa coerente:
-  il network Epstein non è statico, uniforme né trasparente —
-  muta nel tempo (RQ1), è tenuto insieme da attori oscuri (RQ2),
-  e il potere si distribuisce diversamente a seconda del contesto (RQ3).
+Le tre RQ convergono su una narrativa coerente:
 
-════════════════════════════════════════════════════════════════
+  Il network Epstein è un sistema complesso e stratificato.
+  Non è statico (RQ1), non è trasparente (RQ2), non è uniforme (RQ3).
+  Muta in risposta a pressioni esterne, è tenuto insieme da attori oscuri,
+  e il potere si distribuisce in modo radicalmente diverso a seconda
+  del contesto relazionale considerato.
