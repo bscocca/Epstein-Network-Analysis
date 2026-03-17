@@ -1,6 +1,6 @@
   FORENSIC NETWORK ANALYSIS: THE EPSTEIN CORPUS
-  Research Questions — Metodologia e Risultati
-  Corso: Web and Data Science — Prof. Pierri
+  Research Questions - Metodologia e Risultati
+  Corso: Web and Data Science - Prof. Pierri
 
 
 
@@ -10,11 +10,11 @@ volo, atti giudiziari, dichiarazioni e corrispondenza legale. Da questi document
 una pipeline AI ha estratto 107,030 triple RDF nel formato (soggetto, azione,
 oggetto), che costituiscono gli archi del knowledge graph oggetto di analisi.
 
-SCELTA METODOLOGICA — ZERO-SHOT NLP
+SCELTA METODOLOGICA - ZERO-SHOT NLP
 La Sentiment Analysis è stata scartata come approccio principale per una ragione
 strutturale: il corpus è dominato da testo procedurale e fattuale (log di volo,
 verbali, atti legali). Su questo tipo di contenuto, la Sentiment Analysis produce
-un'inflazione artificiale della classe "Neutro" — fino al 90%+ degli archi —
+un'inflazione artificiale della classe "Neutro", fino al 90%+ degli archi,
 rendendo i risultati statisticamente non informativi. La Zero-Shot Text
 Classification con BART-large-mnli (Lewis et al., 2019) permette di assegnare
 etichette semanticamente significative a ciascun arco senza richiedere un
@@ -24,18 +24,18 @@ NLI pre-addestrato.
 TASSONOMIA ADOTTATA
 Tre classi semantiche, scelte per parsimonia e allineamento diretto con le RQ:
 
-  • Legal       — interazioni istituzionali/giudiziarie
-  • Social      — interazioni personali/politiche
-  • Logistical  — interazioni di coordinamento/movimento
+  • Legal       - interazioni istituzionali/giudiziarie
+  • Social      - interazioni personali/politiche
+  • Logistical  - interazioni di coordinamento/movimento
 
 Limitazione riconosciuta: il confine Legal/Social è permeabile in presenza di
 comunicazioni miste. Future iterazioni potrebbero adottare una tassonomia a 5
 classi includendo "Financial" e "Reputational".
 
 RISULTATI NLP
-  Legal:       49,485 archi (46.2%) — confidence media 0.790
-  Social:      48,534 archi (45.3%) — confidence media 0.724
-  Logistical:   9,002 archi  (8.4%) — confidence media 0.728
+  Legal:       49,485 archi (46.2%) - confidence media 0.790
+  Social:      48,534 archi (45.3%) - confidence media 0.724
+  Logistical:   9,002 archi  (8.4%) - confidence media 0.728
 
 Soglia di confidence adottata: ≥ 0.70
 Archi validi dopo filtering: 66,467 (62.1% del totale)
@@ -46,7 +46,7 @@ già correttamente classificato come Legal al di sopra di questa soglia.
 
 
 
-RQ1 — CONTEXT DRIFT
+RQ1 - CONTEXT DRIFT
 "In che modo la natura delle interazioni (Logistica, Sociale, Legale) evolve
 nel tempo, in corrispondenza dei principali eventi giudiziari?"
 
@@ -76,7 +76,7 @@ RISULTATI
 
 INTERPRETAZIONE
 
-Finding 1 — Conferma del Context Drift.
+Finding 1 - Conferma del Context Drift.
 Il network si legifica in risposta agli shock giudiziari esattamente come
 ipotizzato. Il picco di Legal al 94.1% nel 2005-2008 è la risposta strutturale
 più marcata: in quel biennio quasi ogni interazione documentata è di natura
@@ -84,14 +84,14 @@ giudiziaria. Questo è coerente con la teoria del crisis communication: sotto
 pressione istituzionale, gli attori concentrano le loro interazioni documentate
 sul dominio legale.
 
-Finding 2 — Il rimbalzo Social post-patteggiamento.
+Finding 2 - Il rimbalzo Social post-patteggiamento.
 Dopo il Non-prosecution Agreement del 2008, Legal crolla da 94.1% a 35.8%
-e Social sale a 50.8%. Il network "torna alla normalità" — le interazioni
+e Social sale a 50.8%. Il network "torna alla normalità", le interazioni
 documentate riprendono ad essere prevalentemente personali e politiche.
 Questo suggerisce che il patteggiamento ha effettivamente ridotto la pressione
 istituzionale percepita dagli attori del network.
 
-Finding 3 — La crescita di Logistical.
+Finding 3 - La crescita di Logistical.
 Quasi assente prima del 2009 (0.6-2.4%), Logistical cresce fino al 13.4%
 nel 2009-2018 e al 17.9% nel 2019+. Due interpretazioni plausibili:
 (a) aumento reale di attività logistiche documentate nel periodo post-patto,
@@ -107,12 +107,12 @@ quando la pressione cessa (Social 50.8% nel 2009-2018). Il Context Drift
 
 
 
-RQ2 — THE BROKERS
+RQ2 - THE BROKERS
 "Qual è il ruolo strutturale delle entità 'Unknown' nel connettere
 cluster separati?"
 
 QUADRO TEORICO
-Burt (2004) — Structural Holes: gli attori che collegano cluster altrimenti
+Burt (2004) - Structural Holes: gli attori che collegano cluster altrimenti
 disconnessi occupano "buchi strutturali" con vantaggio informativo e strategico
 sproporzionato. La Betweenness Centrality è l'operativizzazione standard di
 questo concetto: misura la proporzione di shortest paths tra tutte le coppie
@@ -121,7 +121,7 @@ di nodi che transitano per un dato nodo.
 OPERATIVIZZAZIONE
 Definizione adottata di "Unknown Entity": qualsiasi nodo che nella denominazione
 contenga token come "unknown", "jane doe", "individual #N", "victim", "minor",
-"unidentified" — catturati tramite regex per evitare falsi negativi da
+"unidentified" - catturati tramite regex per evitare falsi negativi da
 varianti lessicali.
 
 Entità Unknown identificate nel grafo: 2,497 nodi (7.5% del totale)
@@ -165,12 +165,12 @@ I 30 vicini più connessi di unknown person A includono: Donald Trump,
 Bill Clinton, Barack Obama, Hillary Clinton, Ghislaine Maxwell,
 Alan Dershowitz, Ehud Barak, Lawrence Summers, Prince Andrew,
 Reid Weingarten. unknown person B è direttamente connesso ma appartiene
-a una community diversa (community 1 vs 30) — le due entità anonime
+a una community diversa (community 1 vs 30) - le due entità anonime
 gestiscono sfere relazionali indipendenti, non sono la stessa persona.
 
 RISPOSTA ALLA RQ2
 "Le entità Unknown rappresentano il 7.5% dei nodi ma controllano il 15.0%
-della betweenness totale — rapporto di concentrazione 2.00x. La loro
+della betweenness totale - rapporto di concentrazione 2.00x. La loro
 betweenness media è 2.18x superiore alle entità named. Sono broker
 strutturali nel senso di Burt (2004): non sono rumore nel dataset ma
 attori che occupano posizioni di intermediazione privilegiata tra cluster
@@ -178,7 +178,7 @@ altrimenti disconnessi. unknown person A è il secondo nodo per betweenness
 nell'intero grafo, superato solo da Epstein stesso."
 
 
-RQ3 — CONTEXTUAL INFLUENCE
+RQ3 - CONTEXTUAL INFLUENCE
 "Come cambia la gerarchia di influenza (Centrality) filtrando la rete
 per specifici domini (Legal vs Social vs Logistical)?"
 
@@ -193,10 +193,10 @@ SOTTOGRAFI COSTRUITI
   Legal-only:       18,091 nodi, 21,034 archi
   Social-only:      15,150 nodi, 16,635 archi
   Logistical-only:   1,826 nodi,  1,863 archi
-  (Nota: la bassa densità del sottografo Logistical — quasi 1 arco per nodo —
+  (Nota: la bassa densità del sottografo Logistical, quasi 1 arco per nodo,
    rende le metriche su quel dominio statisticamente meno stabili)
 
-RANK SHIFT MATRIX — TOP 20 PER PAGERANK (GRAFO COMPLETO)
+RANK SHIFT MATRIX - TOP 20 PER PAGERANK (GRAFO COMPLETO)
 
   ┌────────────────────────────┬──────┬───────┬────────┬─────────────┐
   │ Entità                     │ Full │ Legal │ Social │ Logistical  │
@@ -254,16 +254,16 @@ RISPOSTA ALLA RQ3
 "Il potere è contestuale: lo stesso attore può essere centrale in un dominio
 e marginale in un altro. Dershowitz è #3 nel dominio Legal e #20 nel Social.
 Barak è #4 nel Social e #440 nel Legal. Virginia Roberts Giuffre è #5 nel
-Legal e #158 nel Social — appare quasi esclusivamente nei procedimenti
+Legal e #158 nel Social - appare quasi esclusivamente nei procedimenti
 giudiziari. Questa specializzazione funzionale sarebbe invisibile analizzando
 solo la centralità aggregata del grafo completo."
 
 
 CONNESSIONI TRA LE TRE RQ
 
-  RQ1 — dimensione TEMPORALE: il network cambia nel tempo
-  RQ2 — dimensione STRUTTURALE: chi tiene insieme il network
-  RQ3 — dimensione CONTESTUALE: il potere dipende dal dominio
+  RQ1 - dimensione TEMPORALE: il network cambia nel tempo
+  RQ2 - dimensione STRUTTURALE: chi tiene insieme il network
+  RQ3 - dimensione CONTESTUALE: il potere dipende dal dominio
 
 Le tre RQ convergono su una narrativa coerente:
 
