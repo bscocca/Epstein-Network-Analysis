@@ -1,6 +1,6 @@
 # Forensic Network Analysis: The Epstein Corpus
 
-**Course:** Web and Data Science — Prof. Pierri  
+**Course:** Web and Data Science - Prof. Pierri  
 **Author:** Bernadette Scocca, Mario Zoccola
 **Year:** 2025–2026
 
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This project applies computational social science methods to a corpus of 25,232 documents related to the Jeffrey Epstein case — including emails, flight logs, legal filings, and personal correspondence — to map power dynamics, identify structural brokers, and track how relational networks evolve across time and institutional context.
+This project applies computational social science methods to a corpus of 25,232 documents related to the Jeffrey Epstein case, including emails, flight logs, legal filings, and personal correspondence, to map power dynamics, identify structural brokers, and track how relational networks evolve across time and institutional context.
 
 The central contribution is a **dynamic knowledge graph** built from 107,030 RDF triples extracted by an AI pipeline, semantically labeled via Zero-Shot NLP classification, and analyzed through network science methods (centrality, community detection, temporal analysis).
 
@@ -16,17 +16,17 @@ The central contribution is a **dynamic knowledge graph** built from 107,030 RDF
 
 ## Research Questions
 
-### RQ1 — Context Drift
+### RQ1: Context Drift
 *How does the nature of interactions (Logistical, Social, Legal) evolve over time, in correspondence with key judicial events in the Epstein case?*
 
 **Finding:** The network undergoes a dramatic semantic shift in response to judicial shocks. Legal interactions peak at 94.1% of all edges during the 2005–2008 investigation period, collapsing to 35.8% post-plea deal (2009–2018) as Social interactions become dominant (50.8%). This confirms the hypothesis that relational networks "legify" in response to institutional pressure, then normalize once legal threat subsides.
 
-### RQ2 — The Brokers
+### RQ2: The Brokers
 *What is the structural role of 'Unknown' entities in connecting separate clusters?*
 
 **Finding:** Unknown/anonymized entities represent 7.5% of network nodes but control 15.0% of total betweenness centrality — exactly double what a uniform distribution would predict (concentration ratio: 2.00x). Their mean betweenness is 2.18x higher than named entities. This is consistent with Burt's (2004) structural holes theory: anonymous actors occupy privileged intermediation positions between otherwise disconnected network clusters.
 
-### RQ3 — Contextual Influence
+### RQ3: Contextual Influence
 *How does the influence hierarchy (centrality) shift when filtering the network by domain?*
 
 **Finding:** Centrality is not domain-invariant. Virginia Roberts Giuffre ranks #4 in the Legal subgraph but #158 in the Social subgraph — appearing almost exclusively in judicial proceedings. Conversely, Ehud Barak ranks #4 in Social but #440 in Legal, reflecting a personal/political rather than judicial relationship with Epstein. The FBI ranks #6 in Legal and #609 in Social. These cross-domain rank shifts reveal functionally specialized actors whose influence is context-dependent.
@@ -136,9 +136,9 @@ Epstein-Network-Analysis/
 │   └── web_graph_data.json           # Dashboard input (NB03 output)
 │
 ├── notebooks/
-│   ├── 01_EDA.ipynb                  # Exploratory Data Analysis (14 cells)
-│   ├── 02_semantic_classification.ipynb  # Zero-Shot NLP (4 cells)
-│   └── 03_network_analysis.ipynb     # Network Analysis (18+ cells)
+│   ├── 01_EDA.ipynb                  # Exploratory Data Analysis
+│   ├── 02_semantic_classification.ipynb  # Zero-Shot NLP
+│   └── 03_network_analysis.ipynb     # Network Analysis
 │
 ├── epstein-network-ui/               # React dashboard
 │   ├── src/
@@ -206,9 +206,7 @@ pip install pandas networkx python-louvain matplotlib seaborn scipy transformers
 ### Execution Order
 
 ```bash
-jupyter notebook notebooks/01_EDA.ipynb         # ~5 min
-jupyter notebook notebooks/02_semantic_classification.ipynb  # ~7 hours (BART inference)
-jupyter notebook notebooks/03_network_analysis.ipynb         # ~20 min
+jupyter notebook notebooks/01_EDA.ipynb       
+jupyter notebook notebooks/02_semantic_classification.ipynb 
+jupyter notebook notebooks/03_network_analysis.ipynb         
 ```
-
-> Notebook 02 requires significant compute time due to BART-large-mnli inference on 107k sequences. On Apple Silicon (M2), MPS acceleration reduces this to approximately 4 hours. A checkpoint system saves progress every 5,000 rows.
