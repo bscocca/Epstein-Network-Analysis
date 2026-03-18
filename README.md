@@ -1,4 +1,4 @@
-# Forensic Network Analysis: The Epstein Corpus
+# Network Analysis: The Epstein Corpus
 
 **Course:** Web and Data Science - Prof. Pierri  
 **Author:** Bernadette Scocca, Mario Zoccola

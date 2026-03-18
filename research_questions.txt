@@ -1,4 +1,4 @@
-  FORENSIC NETWORK ANALYSIS: THE EPSTEIN CORPUS
+  NETWORK ANALYSIS: THE EPSTEIN CORPUS
   Research Questions - Metodologia e Risultati
   Corso: Web and Data Science - Prof. Pierri
 
