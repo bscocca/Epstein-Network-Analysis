@@ -22,7 +22,7 @@ export default function Header({ metadata }) {
           textTransform: 'uppercase',
           color: 'var(--accent)',
         }}>
-          Forensic Network Analysis
+          Network Analysis
         </span>
         <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>
           The Epstein Corpus
